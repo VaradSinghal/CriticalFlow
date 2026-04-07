@@ -31,6 +31,23 @@ export interface TriageResult {
   top_tokens: string[]
 }
 
+export interface TriagePatient {
+  id: string
+  name: string
+  age: number
+  gender: 'M' | 'F'
+  arrival_time: string
+  chief_complaint: string
+  vitals: {
+    hr: number
+    sbp: number
+    o2sat: number
+    temp: number
+  }
+  triage: TriageResult
+  suggested_action: 'Admit to ICU' | 'ED Observation' | 'Ward Transfer'
+}
+
 export interface Patient {
   patient_id: string
   bed_number: number

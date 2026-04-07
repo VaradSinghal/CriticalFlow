@@ -39,18 +39,26 @@ export default function Sidebar({
         <div className="sidebar__alerts">
           <AnimatePresence initial={false}>
             {alerts.slice(0, 6).map((alert) => {
-              const isUrgent = alert.level === 'Intervene now'
+              const severityClass = alert.level === 'Intervene now' 
+                ? 'sidebar__alert--urgent' 
+                : alert.level === 'Doctor review' 
+                  ? 'sidebar__alert--warning' 
+                  : 'sidebar__alert--stable'
+
               return (
                 <motion.div
                   key={alert.id}
-                  className={`sidebar__alert ${alert.acknowledged ? 'sidebar__alert--acked' : ''} ${isUrgent ? 'sidebar__alert--urgent' : ''}`}
+                  className={`sidebar__alert ${alert.acknowledged ? 'sidebar__alert--acked' : ''} ${severityClass}`}
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   layout
                 >
                   <div className="sidebar__alert-header">
-                    <span className="sidebar__alert-dot" style={{ background: isUrgent ? 'var(--color-critical)' : alert.level === 'Doctor review' ? 'var(--color-watch)' : 'var(--color-stable)' }} />
+                    <span 
+                      className="sidebar__alert-dot" 
+                      style={{ background: alert.level === 'Intervene now' ? '#ef4444' : alert.level === 'Doctor review' ? '#f59e0b' : '#22c55e' }} 
+                    />
                     <span className="sidebar__alert-bed">Bed {alert.bed_number}</span>
                     <span className="sidebar__alert-time">{formatTimeAgo(alert.timestamp)}</span>
                   </div>

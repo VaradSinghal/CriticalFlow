@@ -32,12 +32,20 @@
   --text-muted: rgba(144, 224, 239, 0.6); 
 
   /* Status Colors mapped directly to the palette */
-  --color-critical: #0077b6; /* bright-teal-blue */
+  --color-critical: #0077b6; /* default bright-teal-blue */
   --color-critical-glow: 0 0 30px rgba(0, 119, 182, 0.8);
   
-  --color-risk: #00b4d8; /* turquoise-surf */
-  --color-watch: #90e0ef; /* frosted-blue */
-  --color-stable: #caf0f8; /* light-cyan */
+  --color-risk: #00b4d8; 
+  --color-watch: #90e0ef; 
+  --color-stable: #caf0f8; 
+
+  /* Distinct Color-Coded Alerts */
+  --glass-red: rgba(239, 68, 68, 0.15);
+  --glass-red-border: rgba(239, 68, 68, 0.4);
+  --glass-yellow: rgba(245, 158, 11, 0.15);
+  --glass-yellow-border: rgba(245, 158, 11, 0.4);
+  --glass-green: rgba(34, 197, 94, 0.15);
+  --glass-green-border: rgba(34, 197, 94, 0.4);
 
   /* Radii */
   --radius: 16px;
@@ -425,15 +433,27 @@ body {
 .sidebar__badge { background: var(--color-critical); color: #fff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 12px; margin-left: auto; box-shadow: var(--color-critical-glow); }
 
 .sidebar__alert {
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-border);
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-xs);
   margin-bottom: 8px;
   transition: all 0.3s;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-left: 4px solid transparent;
 }
-.sidebar__alert--urgent { border-color: var(--color-critical); background: rgba(0, 119, 182, 0.15); box-shadow: 0 4px 15px rgba(0, 119, 182, 0.2), inset 0 1px 0 rgba(255,255,255,0.1); }
+.sidebar__alert--urgent { 
+  border-left-color: var(--glass-red-border); 
+  background: var(--glass-red); 
+}
+.sidebar__alert--warning { 
+  border-left-color: var(--glass-yellow-border); 
+  background: var(--glass-yellow); 
+}
+.sidebar__alert--stable { 
+  border-left-color: var(--glass-green-border); 
+  background: var(--glass-green); 
+}
 .sidebar__alert-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .sidebar__alert-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
 .sidebar__alert-bed { font-size: 12px; font-weight: 800; color: #fff; }

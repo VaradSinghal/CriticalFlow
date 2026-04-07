@@ -1,25 +1,23 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import ICUFloorMap from './PriorityQueue'
-import PatientDrawer from './PatientDetail'
 import Sidebar from './WardAnalytics'
 import AlertPopup from './AlertPopup'
 import { useWardState } from '@/hooks/useWardState'
+import { useRouter } from 'next/navigation'
 
 export default function Dashboard() {
+  const router = useRouter()
   const {
     snapshot,
     alerts,
-    selectedPatient,
-    selectedPatientId,
     filteredPatients,
     searchQuery,
     setSearchQuery,
     riskFilter,
     setRiskFilter,
-    openDrawer,
-    closeDrawer,
     isSimulating,
     startSimulation,
     stopSimulation,
@@ -54,27 +52,24 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats pills */}
-        <div className="header__stats">
-          <div className="header__pill header__pill--total">
-            <span className="header__pill-value">{snapshot.stats.total_beds}</span>
-            <span className="header__pill-label">Total Beds</span>
+        {/* Clean Unified Stats Block */}
+        <div className="flex gap-6 items-center px-6 py-2 ml-4 rounded-full border border-cyan-500/20 bg-cyan-900/10">
+          <div className="flex flex-col items-center">
+            <span className="text-white font-black text-lg leading-tight">{snapshot.stats.total_beds}</span>
+            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Total</span>
           </div>
-          <div className="header__pill header__pill--critical">
-            <span className="header__pill-value">{snapshot.stats.critical}</span>
-            <span className="header__pill-label">Critical</span>
+          <div className="w-[1px] h-8 bg-cyan-500/20" />
+          <div className="flex flex-col items-center">
+            <span className="text-[var(--color-critical)] font-black text-lg leading-tight drop-shadow-[0_0_10px_rgba(0,119,182,0.8)]">{snapshot.stats.critical}</span>
+            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Critical</span>
           </div>
-          <div className="header__pill header__pill--risk">
-            <span className="header__pill-value">{snapshot.stats.risk}</span>
-            <span className="header__pill-label">At Risk</span>
+          <div className="flex flex-col items-center">
+            <span className="text-[var(--color-risk)] font-black text-lg leading-tight">{snapshot.stats.risk}</span>
+            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Risk</span>
           </div>
-          <div className="header__pill header__pill--watch">
-            <span className="header__pill-value">{snapshot.stats.watch}</span>
-            <span className="header__pill-label">Watch</span>
-          </div>
-          <div className="header__pill header__pill--stable">
-            <span className="header__pill-value">{snapshot.stats.stable}</span>
-            <span className="header__pill-label">Stable</span>
+          <div className="flex flex-col items-center">
+            <span className="text-[var(--color-stable)] font-black text-lg leading-tight">{snapshot.stats.stable}</span>
+            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Stable</span>
           </div>
         </div>
 
@@ -105,14 +100,19 @@ export default function Dashboard() {
             <option value="stable">Stable</option>
           </select>
 
-          {/* Live indicator */}
-          <div className="header__live">
-            <motion.span
-              className="header__live-dot"
-              animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <span>{isSimulating ? 'Simulating' : 'Live'}</span>
+          {/* Live indicator & Triage */}
+          <div className="flex items-center gap-4">
+            <Link href="/triage" className="hidden lg:flex items-center gap-2 px-4 py-2 bg-[var(--color-critical)] text-white font-bold uppercase tracking-wider text-[10px] rounded hover:bg-[var(--glass-red)] hover:border-[var(--glass-red-border)] border border-transparent transition shadow-[var(--color-critical-glow)]">
+              Triage Queue &rarr;
+            </Link>
+            <div className="header__live">
+              <motion.span
+                className="header__live-dot"
+                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <span>{isSimulating ? 'Simulating' : 'Live'}</span>
+            </div>
           </div>
         </div>
       </header>
@@ -123,7 +123,6 @@ export default function Dashboard() {
         <div className="main__floor">
           <ICUFloorMap
             patients={filteredPatients}
-            onSelectBed={openDrawer}
           />
         </div>
 
@@ -137,22 +136,15 @@ export default function Dashboard() {
           isSimulating={isSimulating}
           onSimulate={startSimulation}
           onStopSimulation={stopSimulation}
-          onViewPatient={openDrawer}
+          onViewPatient={(id) => router.push(`/patient/${id}`)}
         />
       </div>
-
-      {/* ─── Patient Drawer (slides in from right) ─── */}
-      <PatientDrawer
-        patient={selectedPatient}
-        isOpen={!!selectedPatientId}
-        onClose={closeDrawer}
-      />
 
       {/* ─── Alert Popup Modal ─── */}
       <AlertPopup
         alert={activeAlert}
         onAcknowledge={acknowledgeAlert}
-        onViewPatient={(id) => { dismissAlert(); openDrawer(id) }}
+        onViewPatient={(id) => { dismissAlert(); router.push(`/patient/${id}`) }}
         onDismiss={dismissAlert}
       />
     </div>

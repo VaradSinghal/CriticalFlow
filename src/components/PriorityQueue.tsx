@@ -3,12 +3,11 @@
 import { Patient } from '@/types'
 import BedCard from './PatientCard'
 
-interface ICUFloorMapProps {
+interface PriorityQueueProps {
   patients: Patient[]
-  onSelectBed: (id: string) => void
 }
 
-export default function ICUFloorMap({ patients, onSelectBed }: ICUFloorMapProps) {
+export default function ICUFloorMap({ patients }: PriorityQueueProps) {
   // Create a 12-bed grid: 4 columns x 3 rows, with nurse station in center
   const allBeds = Array.from({ length: 12 }, (_, i) => i + 1)
 
@@ -42,7 +41,6 @@ export default function ICUFloorMap({ patients, onSelectBed }: ICUFloorMapProps)
               <BedCard
                 key={patient.patient_id}
                 patient={patient}
-                onClick={() => onSelectBed(patient.patient_id)}
                 index={i}
               />
             )
@@ -86,7 +84,6 @@ export default function ICUFloorMap({ patients, onSelectBed }: ICUFloorMapProps)
               <BedCard
                 key={patient.patient_id}
                 patient={patient}
-                onClick={() => onSelectBed(patient.patient_id)}
                 index={i + 4}
               />
             )
@@ -102,7 +99,6 @@ export default function ICUFloorMap({ patients, onSelectBed }: ICUFloorMapProps)
               <BedCard
                 key={patient.patient_id}
                 patient={patient}
-                onClick={() => onSelectBed(patient.patient_id)}
                 index={i + 8}
               />
             )

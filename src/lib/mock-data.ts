@@ -473,3 +473,46 @@ export function createSimulationTick(
 
   return { patients: updatedPatients, newAlert }
 }
+
+export const mockTriagePatients = [
+  {
+    id: 'T01', name: 'Robert Vance', age: 72, gender: 'M',
+    arrival_time: new Date(Date.now() - 45 * 60000).toISOString(),
+    chief_complaint: 'Crushing chest pain radiating to left arm, diaphoretic',
+    vitals: { hr: 110, sbp: 165, o2sat: 94, temp: 37.1 },
+    triage: { severity: 'High', confidence: 0.95, top_tokens: ['crushing chest pain', 'diaphoretic', 'radiating'] },
+    suggested_action: 'Admit to ICU'
+  },
+  {
+    id: 'T02', name: 'Maria Gomez', age: 29, gender: 'F',
+    arrival_time: new Date(Date.now() - 110 * 60000).toISOString(),
+    chief_complaint: 'Severe abdominal pain RLQ, fever, nausea',
+    vitals: { hr: 115, sbp: 110, o2sat: 98, temp: 39.2 },
+    triage: { severity: 'High', confidence: 0.88, top_tokens: ['rlq pain', 'fever 39.2', 'rebound tenderness'] },
+    suggested_action: 'Admit to ICU'
+  },
+  {
+    id: 'T03', name: 'John Smith', age: 45, gender: 'M',
+    arrival_time: new Date(Date.now() - 15 * 60000).toISOString(),
+    chief_complaint: 'Shortness of breath on exertion, mild cough',
+    vitals: { hr: 88, sbp: 135, o2sat: 96, temp: 37.4 },
+    triage: { severity: 'Low', confidence: 0.92, top_tokens: ['mild cough', 'exertional'] },
+    suggested_action: 'ED Observation'
+  },
+  {
+    id: 'T04', name: 'Eleanor Vance', age: 64, gender: 'F',
+    arrival_time: new Date(Date.now() - 25 * 60000).toISOString(),
+    chief_complaint: 'Altered mental status, slurred speech started 1h ago',
+    vitals: { hr: 95, sbp: 180, o2sat: 95, temp: 36.8 },
+    triage: { severity: 'High', confidence: 0.97, top_tokens: ['altered mental status', 'slurred speech', 'stroke scale'] },
+    suggested_action: 'Admit to ICU'
+  },
+  {
+    id: 'T05', name: 'William Chen', age: 52, gender: 'M',
+    arrival_time: new Date(Date.now() - 80 * 60000).toISOString(),
+    chief_complaint: 'Flank pain, hematuria',
+    vitals: { hr: 82, sbp: 140, o2sat: 99, temp: 37.0 },
+    triage: { severity: 'Medium', confidence: 0.84, top_tokens: ['flank pain', 'hematuria'] },
+    suggested_action: 'Ward Transfer'
+  }
+]

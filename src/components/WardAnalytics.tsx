@@ -1,145 +1,145 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { AlertEntry, AIRecommendation } from '@/types'
-import { formatTimeAgo, formatCrashTime, statusColors } from '@/lib/utils'
+import React from 'react'
+import { Patient, ColorLevel } from '@/types'
+import { formatTimeAgo } from '@/lib/utils'
+import { AlertLogEntry } from '@/lib/mock-data'
 
-interface SidebarProps {
-  alerts: AlertEntry[]
-  recommendations: AIRecommendation[]
-  highestRiskPatientName: string
-  highestRiskScore: number
-  highestRiskBed: number
+interface WardAnalyticsProps {
+  alerts: AlertLogEntry[]
   isSimulating: boolean
   onSimulate: () => void
-  onStopSimulation: () => void
-  onViewPatient: (id: string) => void
+  selectedPatient?: Patient
 }
 
-export default function Sidebar({
-  alerts, recommendations, highestRiskPatientName, highestRiskScore, highestRiskBed,
-  isSimulating, onSimulate, onStopSimulation, onViewPatient,
-}: SidebarProps) {
-  const unacknowledged = alerts.filter(a => !a.acknowledged).length
-
+export default function WardAnalytics({ alerts, isSimulating, onSimulate, selectedPatient }: WardAnalyticsProps) {
   return (
-    <aside className="sidebar">
-      {/* Active Alerts */}
-      <div className="sidebar__section">
-        <h3 className="sidebar__section-title">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1L13 12H1L7 1Z" stroke="var(--color-watch)" strokeWidth="1.2" strokeLinejoin="round" />
-            <path d="M7 5v3M7 10h.01" stroke="var(--color-watch)" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
+    <div className="flex flex-col gap-8 h-full">
+      {/* Alert System */}
+      <section className="flex flex-col gap-4">
+        <h3 className="font-headline font-bold text-sm text-on-surface uppercase tracking-widest opacity-60">
           Active Alerts
-          {unacknowledged > 0 && (
-            <span className="sidebar__badge">{unacknowledged}</span>
-          )}
         </h3>
-        <div className="sidebar__alerts">
-          <AnimatePresence initial={false}>
-            {alerts.slice(0, 6).map((alert) => {
-              const severityClass = alert.level === 'Intervene now' 
-                ? 'sidebar__alert--urgent' 
-                : alert.level === 'Doctor review' 
-                  ? 'sidebar__alert--warning' 
-                  : 'sidebar__alert--stable'
-
-              return (
-                <motion.div
-                  key={alert.id}
-                  className={`sidebar__alert ${alert.acknowledged ? 'sidebar__alert--acked' : ''} ${severityClass}`}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  layout
-                >
-                  <div className="sidebar__alert-header">
-                    <span 
-                      className="sidebar__alert-dot" 
-                      style={{ background: alert.level === 'Intervene now' ? '#ef4444' : alert.level === 'Doctor review' ? '#f59e0b' : '#22c55e' }} 
-                    />
-                    <span className="sidebar__alert-bed">Bed {alert.bed_number}</span>
-                    <span className="sidebar__alert-time">{formatTimeAgo(alert.timestamp)}</span>
-                  </div>
-                  <p className="sidebar__alert-msg">{alert.message}</p>
-                </motion.div>
-              )
-            })}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Highest Risk Patient */}
-      <div className="sidebar__section">
-        <h3 className="sidebar__section-title">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <circle cx="7" cy="7" r="6" stroke="var(--color-critical)" strokeWidth="1.2" />
-            <path d="M7 4v3M7 9h.01" stroke="var(--color-critical)" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
-          Highest Risk
-        </h3>
-        <div className="sidebar__highest-risk">
-          <div className="sidebar__hr-score">{Math.round(highestRiskScore * 100)}%</div>
-          <div>
-            <p className="sidebar__hr-name">{highestRiskPatientName}</p>
-            <p className="sidebar__hr-bed">Bed {highestRiskBed}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Recommendations */}
-      <div className="sidebar__section">
-        <h3 className="sidebar__section-title">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 1v2M7 11v2M1 7h2M11 7h2M2.76 2.76l1.41 1.41M9.83 9.83l1.41 1.41M2.76 11.24l1.41-1.41M9.83 4.17l1.41-1.41" stroke="var(--color-watch)" strokeWidth="1" strokeLinecap="round" />
-          </svg>
-          AI Recommendations
-        </h3>
-        <div className="sidebar__recommendations">
-          {recommendations.slice(0, 3).map((rec) => (
-            <div key={rec.patient_id} className={`sidebar__rec sidebar__rec--${rec.urgency}`}>
-              <div className="sidebar__rec-header">
-                <span className="sidebar__rec-bed">Bed {rec.bed_number}</span>
-                <span className={`sidebar__rec-urgency sidebar__rec-urgency--${rec.urgency}`}>
-                  {rec.urgency}
-                </span>
-              </div>
-              <ul className="sidebar__rec-actions">
-                {rec.actions.slice(0, 3).map((a, i) => (
-                  <li key={i}>{a}</li>
-                ))}
-              </ul>
-            </div>
+        <div className="space-y-3">
+          {alerts.slice(0, 3).map((alert) => (
+            <AlertCard key={alert.id} alert={alert} />
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Simulate button */}
-      <motion.button
-        className={`sidebar__simulate ${isSimulating ? 'sidebar__simulate--active' : ''}`}
-        onClick={isSimulating ? onStopSimulation : onSimulate}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        {isSimulating ? (
-          <>
-            <motion.span
-              className="sidebar__simulate-dot"
-              animate={{ scale: [1, 1.5, 1], opacity: [1, 0.3, 1] }}
-              transition={{ duration: 1.2, repeat: Infinity }}
-            />
-            Stop Simulation
-          </>
+      {/* Explainability (SHAP) */}
+      <section className="bg-surface-container-low/50 border border-outline-variant/10 rounded-xl p-6 flex-1 flex flex-col gap-4 shadow-sm backdrop-blur-sm">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+            smart_toy
+          </span>
+          <h3 className="font-headline font-bold text-sm text-on-surface uppercase tracking-widest">
+            Model Explainability
+          </h3>
+        </div>
+
+        {selectedPatient ? (
+          <div className="space-y-6">
+            <div>
+              <p className="text-[0.6875rem] font-bold text-on-surface-variant uppercase mb-4 tracking-wider">
+                Primary Risk Drivers
+              </p>
+              <div className="space-y-4">
+                {selectedPatient.shap_features.slice(0, 4).map((feature, i) => (
+                  <ShapBar key={i} name={feature.name} importance={feature.importance} />
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 bg-primary-fixed/20 rounded-lg border border-primary/10">
+              <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">lightbulb</span> 
+                AI Recommendation
+              </p>
+              <p className="text-[0.6875rem] text-on-primary-fixed-variant leading-relaxed font-medium">
+                {selectedPatient.recommendation}
+              </p>
+            </div>
+            
+            <button className="mt-auto w-full py-2.5 text-primary font-bold text-xs uppercase tracking-widest border border-primary/20 rounded-lg hover:bg-primary-fixed transition-all shadow-sm">
+              Open Full Analysis
+            </button>
+          </div>
         ) : (
-          <>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M3 1l10 6-10 6V1z" fill="currentColor" />
-            </svg>
-            Simulate Ward
-          </>
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
+            <span className="material-symbols-outlined text-4xl text-outline-variant mb-2">person_search</span>
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Select a patient</p>
+          </div>
         )}
-      </motion.button>
-    </aside>
+      </section>
+
+      {/* Demo Controls */}
+      <div className="mt-auto pt-4 pb-2">
+        <button 
+          onClick={onSimulate}
+          disabled={isSimulating}
+          className={`
+            w-full py-3.5 rounded-xl font-headline font-bold text-sm tracking-wide transition-all shadow-md active:scale-95
+            ${isSimulating 
+              ? 'bg-surface-container text-outline cursor-not-allowed' 
+              : 'bg-gradient-to-r from-primary to-primary-container text-white hover:shadow-lg'
+            }
+          `}
+        >
+          {isSimulating ? 'SIMULATION IN PROGRESS...' : 'START RISK SIMULATION'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function AlertCard({ alert }: { alert: AlertLogEntry }) {
+  const isCritical = alert.color === 'RED'
+  
+  return (
+    <div className={`
+      ${isCritical ? 'bg-tertiary-container/30 border-l-4 border-tertiary shadow-sm' : 'bg-surface-container-lowest border-l-4 border-primary shadow-xs'} 
+      rounded-lg p-4 transition-all hover:translate-x-1 cursor-pointer
+    `}>
+      <div className="flex gap-3">
+        <span 
+          className={`material-symbols-outlined text-sm ${isCritical ? 'text-tertiary' : 'text-primary'}`} 
+          style={{ fontVariationSettings: "'FILL' 1" }}
+        >
+          {isCritical ? 'warning' : 'info'}
+        </span>
+        <div>
+          <p className={`text-xs font-extrabold ${isCritical ? 'text-on-tertiary-fixed-variant' : 'text-on-surface'}`}>
+            {isCritical ? 'Critical Risk:' : 'Status Update:'} {alert.patient_id}
+          </p>
+          <p className={`text-[0.6875rem] mt-1 line-clamp-2 ${isCritical ? 'text-on-tertiary-fixed-variant opacity-80' : 'text-on-surface-variant'}`}>
+            {alert.message}
+          </p>
+          <p className={`text-[0.625rem] font-bold mt-2 uppercase tracking-tighter ${isCritical ? 'text-tertiary' : 'text-on-surface-variant'}`}>
+            {formatTimeAgo(alert.timestamp)}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ShapBar({ name, importance }: { name: string; importance: number }) {
+  // Max normalization for visualization
+  const width = Math.min(100, importance * 150) 
+  
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between text-xs font-bold font-headline">
+        <span className="text-on-surface/70 uppercase tracking-widest text-[0.65rem]">{name}</span>
+        <span className="text-tertiary">+{importance.toFixed(2)} SHAP</span>
+      </div>
+      <div className="w-full h-2 bg-surface-container rounded-full overflow-hidden border border-outline-variant/10">
+        <div 
+          className="h-full bg-tertiary rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(148,0,16,0.3)]" 
+          style={{ width: `${width}%` }}
+        ></div>
+      </div>
+    </div>
   )
 }

@@ -1,120 +1,76 @@
 export type SeverityLevel = 'Low' | 'Medium' | 'High'
-export type ActionLevel = 'Monitor' | 'Doctor review' | 'Intervene now'
-export type BedStatus = 'Stable' | 'Watch' | 'Risk' | 'Critical'
-
-export interface VitalReading {
-  hour: number
-  hr: number | null
-  o2sat: number | null
-  sbp: number | null
-  temp: number | null
-  resp: number | null
-}
-
-export interface RiskTrajectory {
-  now: number
-  t15m: number
-  t30m: number
-  t1h: number
-  t4h: number
-}
+export type ActionLevel   = 'Monitor' | 'Doctor review' | 'Intervene now'
+export type ColorLevel    = 'GREEN' | 'AMBER' | 'RED'
 
 export interface ShapFeature {
   name: string
-  importance: number
-  direction: 'risk' | 'protective'
+  importance: number        // 0-1, use as bar width %
 }
 
-export interface TriageResult {
-  severity: SeverityLevel
-  confidence: number
-  top_tokens: string[]
+export interface Trajectory {
+  now: number               // risk score right now
+  t1h: number               // predicted in 1 hour
+  t2h: number               // predicted in 2 hours
+  t4h: number               // predicted in 4 hours
 }
 
-export interface TriagePatient {
-  id: string
-  name: string
-  age: number
-  gender: 'M' | 'F'
-  arrival_time: string
-  chief_complaint: string
-  vitals: {
-    hr: number
-    sbp: number
-    o2sat: number
-    temp: number
-  }
-  triage: TriageResult
-  suggested_action: 'Admit to ICU' | 'ED Observation' | 'Ward Transfer'
+export interface VitalsSparkline {
+  HR: number[]              // array of last 5 readings
+  O2Sat: number[]
+  SBP: number[]
 }
 
 export interface Patient {
   patient_id: string
-  bed_number: number
-  name: string
   age: number
-  gender: 'M' | 'F'
+  gender: string            // 'M' or 'F'
   hours_admitted: number
   diagnosis: string
-  final_score: number
-  status: BedStatus
+  final_score: number       // 0-1, the main risk score
   action: ActionLevel
-  recommendation: string
-  explanation: string
-  predicted_crash_minutes: number | null
-  confidence: number
-  triage: TriageResult
-  trajectory: RiskTrajectory
-  vitals_history: VitalReading[]
+  color: ColorLevel
+  recommendation: string    // plain English action string
+  explanation: string       // plain English SHAP explanation
+  triage_severity: SeverityLevel
+  icu_risk: number          // 0-1
+  trajectory: Trajectory
+  vitals_sparkline: VitalsSparkline
   shap_features: ShapFeature[]
-  last_updated: string
-  // Latest vitals snapshot
-  current_hr: number
-  current_sbp: number
-  current_o2sat: number
-  current_temp: number
-  hr_trend: 'up' | 'down' | 'stable'
-  sbp_trend: 'up' | 'down' | 'stable'
-  o2sat_trend: 'up' | 'down' | 'stable'
-  temp_trend: 'up' | 'down' | 'stable'
+  last_updated: string      // ISO timestamp
+}
+
+export interface WardStats {
+  critical: number
+  review: number
+  stable: number
+  avg_lead_time_minutes: number
 }
 
 export interface WardSnapshot {
   ward_id: string
   timestamp: string
-  patients: Patient[]
-  stats: {
-    total_beds: number
-    critical: number
-    risk: number
-    watch: number
-    stable: number
-    avg_lead_time_minutes: number
-  }
+  patients: Patient[]       // already sorted by final_score DESC
+  stats: WardStats
 }
 
-export interface WardSocketMessage {
+export interface WsMessage {
   type: 'snapshot' | 'patient_update' | 'alert'
-  payload: WardSnapshot | Patient | AlertEntry
+  payload: WardSnapshot
 }
 
-export interface AlertEntry {
-  id: string
+// For triage form POST /api/v1/triage
+export interface TriageRequest {
   patient_id: string
-  bed_number: number
-  patient_name: string
-  risk_score: number
-  message: string
-  level: ActionLevel
-  timestamp: string
-  reasons: string[]
-  predicted_crash_minutes: number | null
-  acknowledged: boolean
+  text: string              // symptom description typed by user
 }
 
-export interface AIRecommendation {
+export interface TriageResponse {
   patient_id: string
-  bed_number: number
-  actions: string[]
-  urgency: 'low' | 'medium' | 'high'
+  severity: SeverityLevel
+  confidence: number
+  probabilities: {
+    Low: number
+    Medium: number
+    High: number
+  }
 }

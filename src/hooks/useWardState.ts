@@ -12,9 +12,27 @@ export function useWardState() {
   const tickRef = useRef(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  const [isTriageModalOpen, setIsTriageModalOpen] = useState(false)
+
   const selectedPatient = snapshot.patients.find(p => p.patient_id === selectedPatientId) ?? snapshot.patients[0]
 
   const selectPatient = useCallback((id: string) => setSelectedPatientId(id), [])
+
+  const admitPatient = useCallback((patient: Patient) => {
+    setSnapshot(prev => {
+      const updatedPatients = [patient, ...prev.patients]
+      const critical = updatedPatients.filter(p => p.color === 'RED').length
+      const review = updatedPatients.filter(p => p.color === 'AMBER').length
+      const stable = updatedPatients.filter(p => p.color === 'GREEN').length
+
+      return {
+        ...prev,
+        patients: updatedPatients,
+        stats: { ...prev.stats, critical, review, stable },
+      }
+    })
+    setSelectedPatientId(patient.patient_id)
+  }, [])
 
   const startSimulation = useCallback(() => {
     if (isSimulating) return
@@ -60,5 +78,8 @@ export function useWardState() {
     selectPatient,
     isSimulating,
     startSimulation,
+    isTriageModalOpen,
+    setIsTriageModalOpen,
+    admitPatient,
   }
 }

@@ -8,9 +8,10 @@ import DashboardView from './DashboardView'
 import PatientsView from './PatientsView'
 import AlertsView from './AlertsView'
 import AnalyticsView from './AnalyticsView'
+import TriageModal from './TriageModal'
 import { AnimatePresence, motion } from 'framer-motion'
 
-export type ViewType = 'dashboard' | 'patients' | 'alerts' | 'analytics'
+export type ViewType = 'dashboard' | 'patients' | 'alerts' | 'analytics' | 'triage'
 
 export default function Dashboard() {
   const { 
@@ -19,7 +20,10 @@ export default function Dashboard() {
     selectedPatient, 
     selectPatient, 
     isSimulating, 
-    startSimulation 
+    startSimulation,
+    isTriageModalOpen,
+    setIsTriageModalOpen,
+    admitPatient
   } = useWardState()
   
   const [activeView, setActiveView] = useState<ViewType>('dashboard')
@@ -38,7 +42,16 @@ export default function Dashboard() {
     dashboard: 'Unit Dashboard Overview',
     patients: 'Patient Directory',
     alerts: 'Clinical Alert Feed',
-    analytics: 'Ward Performance Analytics'
+    analytics: 'Ward Performance Analytics',
+    triage: 'Patient Triage'
+  }
+
+  const handleViewChange = (view: ViewType) => {
+    if (view === 'triage') {
+      setIsTriageModalOpen(true)
+    } else {
+      setActiveView(view)
+    }
   }
 
   const handleSelectPatient = (id: string) => {
@@ -50,7 +63,13 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden relative">
-      <Sidebar activeView={activeView} onViewChange={setActiveView} />
+      <Sidebar activeView={activeView} onViewChange={handleViewChange} />
+      
+      <TriageModal 
+        isOpen={isTriageModalOpen} 
+        onClose={() => setIsTriageModalOpen(false)} 
+        onAdmit={admitPatient}
+      />
 
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
         <TopBar title={viewTitles[activeView]} onSearch={setSearchQuery} />
